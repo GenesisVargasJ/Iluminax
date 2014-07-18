@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
+# Iluminax! - Minisoftware para controlar el brillo y color de la pantalla #
+# Autor: Genesis Vargas J #
+# Website: http://www.genesisvargasj.com #
+# Licencia: GPL V3 !Software Libre! #
 
-import gtk
-import pygtk
-import subprocess
+from gi.repository import Gtk, GdkPixbuf, Gdk
 from os import system
+import subprocess
 
 class Iluminax():
 	
@@ -23,63 +24,56 @@ class Iluminax():
 		return disp_conectados
 	
 	def __init__(self):
-		b = gtk.Builder()
-		b.add_from_file("interfaz.xml")
-		self.DispositivosDetectados = self.DetectarDispositivos()
-		self.NumDispositivosDetectados = len(self.DispositivosDetectados)
-		if self.NumDispositivosDetectados == 1:
-			if self.DebugTrue():
-				print 'Detectado :)'
-			self.PrimerDispositivo = self.DispositivosDetectados[0]
-		else:
-			self.PrimerDispositivo = 'No Encontrado :('
-		self.comandos_dispositivo = []
-		self.valor = 0.00
-		for i in xrange(0, 101):
-			comando_primer_dispositivo = "xrandr --output \%s --brightness %s" % (self.PrimerDispositivo, self.valor)
-			self.comandos_dispositivo.append(comando_primer_dispositivo)
-			self.valor += 0.01
+		b = Gtk.Builder()
+		b.add_from_file("interfaz.glade")
+		
 		self.FrmPrincipal = b.get_object("FrmPrincipal")
-		self.BtnCerrar = b.get_object("BtnCerrar")
-		self.BtnInfo = b.get_object("BtnInfo")
-		self.BtnBajo = b.get_object("BtnBajo")
-		self.BtnMedio = b.get_object("BtnMedio")
-		self.BtnAlto = b.get_object("BtnAlto")
 		self.FrmInfo = b.get_object("FrmInfo")
-		self.ImagenPantalla = b.get_object("PicturePantalla")
+		self.BoxHorizontal = b.get_object("eventbox1")
+		self.ImagenPantalla = b.get_object("ImagenPantalla")
+		self.BoxIzquiero = b.get_object("eventbox2")
+		self.CambiarColorFondo(self.BoxIzquiero, "#FFF")
+		self.CambiarColorFondo(self.BoxHorizontal, "#2F6EA9")
+		self.CambiarColorFondo(self.FrmPrincipal, "#89A4F1")
 		b.connect_signals(self)
 		self.FrmPrincipal.show()
 	
-	def on_BtnBajo_clicked(self, widget, data=None):
-		system(self.comandos_dispositivo[70])
-		self.ImagenPantalla.set_from_file("pantalla1.png")
+	def on_BtnBajo_clicked(self, button):
+		CambiarBrilloPantalla(70, "pantalla1.png")
 	
-	def on_BtnMedio_clicked(self, widget, data=None):
-		system(self.comandos_dispositivo[85])
-		self.ImagenPantalla.set_from_file("pantalla2.png")
+	def on_BtnMedio_clicked(self, button):
+		CambiarBrilloPantalla(85, "pantalla2.png")
 	
-	def on_BtnAlto_clicked(self, widget, data=None):
-		system(self.comandos_dispositivo[100])
-		self.ImagenPantalla.set_from_file("pantalla3.png")
+	def on_BtnAlto_clicked(self, button):
+		CambiarBrilloPantalla(100, "pantalla3.png")
 	
-	def on_BtnCerrar_clicked(self, widget, data=None):
-		gtk.main_quit()
+	def on_BtnSalir_clicked(self, button):
+		Gtk.main_quit()
 	
-	def on_BtnInfo_clicked(self, widget, data=None):
+	def on_BtnInfo_clicked(self, button):
 		self.FrmInfo.run()
 		self.FrmInfo.hide()
 	
-	def on_FrmPrincipal_destroy(self, widget, data=None):
+	def on_FrmPrincipal_destroy(self, button):
 		gtk.main_quit()
 	
-	def on_RbtnRojo_toggled(self, widget, data=None):
+	def on_RbtnRojo_toggled(self, button):
 		system("xrandr --output \%s --gamma %s" % (self.PrimerDispositivo, "1.5:1.0:1.0"))
 		
-	def on_RbtnAzul_toggled(self, widget, data=None):
+	def on_RbtnAzul_toggled(self, button):
 		system("xrandr --output \%s --gamma %s" % (self.PrimerDispositivo, "0.5:1.0:1.0"))
 		
-	def on_RbtnNormal_toggled(self, widget, data=None):
+	def on_RbtnNormal_toggled(self, button):
 		system("xrandr --output \%s --gamma %s" % (self.PrimerDispositivo, "1.0:1.0:1.0"))
 		
+	#procedimiento para cambiar brillo de pantalla
+	def CambiarBrilloPantalla(self, numerobrillo, imagen):
+		system(self.comandos_dispositivo[numerobrillo])
+		self.ImagenPantalla.set_from_file("imagenes/" + imagen)
+		
+	#procedimiento para cambiar color de fondo a window o eventbox con el metodo modify_bg
+	def CambiarColorFondo(self, widget, color):
+		widget.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse(color))
+		
 Iluminax()
-gtk.main()
+Gtk.main()
